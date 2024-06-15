@@ -1,0 +1,383 @@
+import uuid
+import requests
+import json
+import random
+import string
+
+# First API request
+url1 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/auth"
+headers1 = {
+    "X-Device-Id": "9dbf2a23e5f177ac",
+    "Authorization": "Bearer",
+    "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+    "Content-Type": "application/json; charset=utf-8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "User-Agent": "okhttp/4.12.0"
+}
+data1 = {
+    "countryCode": "RO",
+    "phone": "+40771404569",
+    "email": "ilianmarius@gmail.com"
+}
+response1 = requests.post(url1, headers=headers1, data=json.dumps(data1))
+data_token = response1.json().get("data", "Data field not found")
+print("Data Token: ", data_token)
+# Second API request
+url2 = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+headers2 = {
+    "Content-Type": "application/json",
+    "X-Android-Package": "com.bitraptors.mobilfox",
+    "X-Android-Cert": "5D015420F96CDB1D592C6AB2B68CD97222769CC1",
+    "Accept-Language": "en-US",
+    "X-Client-Version": "Android/Fallback/X22003001/FirebaseCore-Android",
+    "X-Firebase-Gmpid": "1:1065362310606:android:bde93f488b69a773d7979f",
+    "X-Firebase-Client": "H4sIAAAAAAAAAKtWykhNLCpJSk0sKVayio7VUSpLLSrOzM9TslIyUqoFAFyivEQfAAAA",
+    "X-Firebase-Appcheck": "eyJlcnJvciI6IlVOS05PV05fRVJST1IifQ==",
+    "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; SM-S908E Build/TP1A.220624.014)",
+    "Connection": "Keep-Alive",
+    "Accept-Encoding": "gzip, deflate, br"
+}
+data2 = {
+    "token": data_token,
+    "returnSecureToken": True
+}
+response2 = requests.post(url2, headers=headers2, data=json.dumps(data2))
+refresh_token = response2.json().get("refreshToken", "refreshToken field not found")
+print("Refresh Token: ", refresh_token)
+# Third API request
+url3 = "https://securetoken.googleapis.com/v1/token?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+headers3 = {
+    "Content-Type": "application/json",
+    "X-Android-Package": "com.bitraptors.mobilfox",
+    "X-Android-Cert": "5D015420F96CDB1D592C6AB2B68CD97222769CC1",
+    "Accept-Language": "en-US",
+    "X-Client-Version": "Android/Fallback/X22003001/FirebaseCore-Android",
+    "X-Firebase-Gmpid": "1:1065362310606:android:bde93f488b69a773d7979f",
+    "X-Firebase-Client": "H4sIAAAAAAAAAKtWykhNLCpJSk0sKVayio7VUSpLLSrOzM9TslIyUqoFAFyivEQfAAAA",
+    "X-Firebase-Appcheck": "eyJlcnJvciI6IlVOS05PV05fRVJST1IifQ==",
+    "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; SM-S908E Build/TP1A.220624.014)",
+    "Connection": "Keep-Alive",
+    "Accept-Encoding": "gzip, deflate, br"
+}
+data3 = {
+    "grantType": "refresh_token",
+    "refreshToken": refresh_token
+}
+response3 = requests.post(url3, headers=headers3, data=json.dumps(data3))
+response_json3 = response3.json()
+id_token = response_json3.get("id_token", "id_token field not found")
+user_id = response_json3.get("user_id", "user_id field not found")
+print("ID Token: ", id_token)
+print("User ID: ", user_id)
+# Fourth API request
+url4 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
+headers4 = {
+    "Authorization": f"Bearer {id_token}",
+    "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+    "Content-Type": "application/json; charset=utf-8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "User-Agent": "okhttp/4.12.0"
+}
+data4 = {
+    "email": "ilianmarius@gmail.com",
+    "phone": "+40771404569",
+    "countryCode": "RO",
+    "dateOfBirth": "2024-06-12",
+    "gender": "gender_man",
+    "phoneType": "Apple Iphone 14"
+}
+response4 = requests.post(url4, headers=headers4, data=json.dumps(data4))
+response_data4 = response4.json().get("data", "Data field not found")
+referral_code = response_data4.get("referralCode", "referralCode field not found")
+print("Referral Code: ", referral_code)
+
+def add_spins(referral_code):
+    custom_user_agent = "Mozilla/5.0 (Linux; Android 12; Pixel; CustomAgent) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Mobile Safari/537.36"
+
+    def generate_device_id():
+        unique_id = uuid.uuid4()
+        device_id = unique_id.hex[:16]
+        return device_id
+
+    def random_string(length):
+        return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+
+    def random_phone():
+        return '+4077' + ''.join(random.choice(string.digits) for _ in range(7))
+
+    def random_email():
+        first_names = [
+            'Andrei', 'Ana', 'Ion', 'Maria', 'Vasile', 'Elena', 'Gheorghe', 'Camelia', 'Nicolae', 'Gabriela'
+        ]
+        last_names = [
+            'Popescu', 'Ionescu', 'Mihai', 'Dumitrescu', 'Popa', 'Marin', 'Stan', 'Stefan'
+        ]
+        first_name = random.choice(first_names).lower()
+        last_name = random.choice(last_names).lower()
+        return f'{first_name}.{last_name}{random.randint(1, 99)}@gmail.com'
+
+    def random_access_token():
+        return ''.join(random.choice(string.hexdigits) for _ in range(32))
+
+    def get_refresh_token(data_token):
+        url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+        headers = {
+            'Host': 'www.googleapis.com',
+            'Content-Type': 'application/json',
+            'X-Android-Package': 'com.bitraptors.mobilfox',
+            'X-Android-Cert': '5D015420F96CDB1D592C6AB2B68CD97222769CC1',
+            'Accept-Language': 'en-US',
+            'X-Client-Version': 'Android/Fallback/X22003001/FirebaseCore-Android',
+            'User-Agent': custom_user_agent,
+            'Accept-Encoding': 'gzip, deflate, br'
+        }
+        data = {
+            "token": data_token,
+            "returnSecureToken": True
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(response.status_code)
+        print(response.text)
+        response_json = response.json()
+        refresh_token = response_json.get("refreshToken", "Refresh token not found")
+        return refresh_token
+
+    def get_id_token(refresh_token):
+        url = "https://securetoken.googleapis.com/v1/token?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+        headers = {
+            "Host": "securetoken.googleapis.com",
+            "Content-Type": "application/json",
+            "X-Android-Package": "com.bitraptors.mobilfox",
+            "X-Android-Cert": "5D015420F96CDB1D592C6AB2B68CD97222769CC1",
+            "Accept-Language": "en-US",
+            "X-Client-Version": "Android/Fallback/X22003001/FirebaseCore-Android",
+            "User-Agent": custom_user_agent,
+            "Accept-Encoding": "gzip, deflate, br"
+        }
+        data = {
+            "grantType": "refresh_token",
+            "refreshToken": refresh_token
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(response.status_code)
+        print(response.text)
+        response_json = response.json()
+        id_token = response_json.get("id_token", "ID token not found")
+        return id_token
+
+    def submit_user_data(id_token, phone_number, dob, phone_type):
+        referralCode = "53R4O4220T"
+        url = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
+        headers = {
+            "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+            "Authorization": f"Bearer {id_token}",
+            "X-Shopify-Customer-Access-Token": "4932cb3734eabbe37427666cc648402c",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "User-Agent": custom_user_agent
+        }
+        data = {
+            "email": random_email(),
+            "phone": phone_number,
+            "countryCode": "RO",
+    "dateOfBirth": dob,
+            "gender": "gender_other",
+            "phoneType": phone_type,
+            "referralCode": referral_code
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(response.status_code)
+        print(response.text)
+
+    date_of_birth_list = ["1993-05-21", "1985-12-12", "2000-09-30", "1972-03-10"]
+    phone_type_list = [
+        "Samsung Galaxy S20",
+        "Apple iPhone 13 Pro",
+        "Google Pixel 5",
+        "OnePlus 9 Pro",
+    ]
+
+    num_iterations = 5
+
+    for i in range(num_iterations):
+        print(f"\nIteration {i+1}:")
+
+        random_dob = random.choice(date_of_birth_list)
+        random_phone_type = random.choice(phone_type_list)
+
+        x_device_id = generate_device_id()
+        random_phone_number = random_phone()
+        random_email_address = random_email()
+        random_x_shopify_token = random_access_token()
+
+        print(f"X-Device-Id: {x_device_id}")
+        print(f"Random Phone: {random_phone_number}")
+        print(f"Random Email: {random_email_address}")
+        print(f"X-Shopify-Customer-AccessToken: {random_x_shopify_token}")
+
+        url = 'https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/auth'
+        headers = {
+            'Host': 'europe-west1-mobilfox-prod.cloudfunctions.net',
+            'X-Device-Id': x_device_id,
+            'Authorization': 'Bearer',
+            'X-Shopify-Customer-Access-Token': '4932cb3734eabbe37427666cc648402c',
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'User-Agent': custom_user_agent
+        }
+
+        data = {
+            "countryCode": "RO",
+            "phone": random_phone_number,
+            "email": random_email_address
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(response.status_code)
+        print(response.text)
+
+        response_json = response.json()
+        data_value = response_json.get('data', 'Data not found')
+
+        refresh_token = get_refresh_token(data_value)
+        print(f"Refresh token: {refresh_token}")
+
+        id_token = get_id_token(refresh_token)
+        print(f"ID token: {id_token}")
+
+        submit_user_data(id_token, random_phone_number, random_dob, random_phone_type)
+
+def send_to_discord(webhook_url, item_name, image_url):
+    payload = {
+        "content": None,
+        "embeds": [
+            {
+                "title": f"You won {item_name}",
+                "color": None,
+                "author": {
+                    "name": "Item won",
+                    "icon_url": "https://scontent.fotp3-4.fna.fbcdn.net/v/t39.30808-6/331418536_735260971331856_2894802316724112429_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=5f2048&_nc_ohc=lxABAq8esYoQ7kNvgHa7e_E&_nc_ht=scontent.fotp3-4.fna&oh=00_AYCnV1ghgKLQjzEEJhS1HdZzWeW-A0eqwTrw6v9b8Ls8tQ&oe=667251E4"
+                },
+                "image": {
+                    "url": image_url
+                }
+            }
+        ],
+        "attachments": []
+    }
+
+    response = requests.post(webhook_url, json=payload)
+    print(f"Webhook response: {response.status_code}")
+
+def get_remaining_spins(id_token):
+    url7 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
+    headers7 = {
+        "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+        "Authorization": f"Bearer {id_token}",
+        "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "okhttp/4.12.0"
+    }
+
+    response7 = requests.get(url7, headers=headers7)
+    print(response7.status_code)
+    print(response7.text)
+
+    remaining_spins_data = response7.json()
+    daily_spins = remaining_spins_data["data"]["dailySpins"]
+    extra_spins = remaining_spins_data["data"]["extraSpins"]
+
+    return daily_spins + extra_spins
+
+def send_spin_request(id_token, count=17):
+    def get_remaining_spins(id_token):
+        url_remaining_spins = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
+        headers_remaining_spins = {
+            "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+            "Authorization": f"Bearer {id_token}",
+            "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+            "Accept-Encoding": "gzip, deflate, br",
+            "User-Agent": "okhttp/4.12.0"
+        }
+        response_remaining_spins = requests.get(url_remaining_spins, headers=headers_remaining_spins)
+        remaining_spins_data = response_remaining_spins.json()
+        daily_spins = remaining_spins_data["data"]["dailySpins"]
+        extra_spins = remaining_spins_data["data"]["extraSpins"]
+        return daily_spins + extra_spins
+
+    url5 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/spin"
+    headers5 = {
+        "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+        "Authorization": f"Bearer {id_token}",
+        "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+        "Content-Length": "0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "okhttp/4.12.0"
+    }
+
+    spins_done = 0
+    while spins_done < count:
+        response5 = requests.post(url5, headers=headers5)
+        print(response5.status_code)
+        print(response5.text)
+
+        if response5.status_code != 200:
+            print("DEBUG: Spin request failed")
+            remaining_spins = get_remaining_spins(id_token)
+            print(f"Remaining Spins: {remaining_spins}")
+            if remaining_spins == 0:
+                send_delete_request(id_token)
+                break
+            continue
+
+        response_json = response5.json()
+        if "data" in response_json and "reward" in response_json["data"]:
+            item_name = response_json["data"]["reward"]["name"]
+            image_url = response_json["data"]["reward"]["imageUrl"]
+
+            common_titles = [
+                "gift_nano_glass_title",
+                "gift_lazy_strap_title",
+                "no_gift_title",
+                "gift_badge_title",
+                "gift_cross_body_title",
+                "gift_5_off_coupon_title",
+                "another_chance_to_spin_title"
+            ]
+
+            if item_name != "another_chance_to_spin_title":
+                if item_name not in common_titles:
+                    webhook_url = "https://discord.com/api/webhooks/1251470465822625845/eHsvE2mm9qQed-otK_W8GtOQUgttuN_cdkokvOaY-YLYv71fMOZAMxYsHo7AGQbe_tPV"
+                else:
+                    webhook_url = "https://discord.com/api/webhooks/1251241479230460015/C6BIaJgZ38E46xc4oASZ6vKqWtIsXzejbv4zcbHYCu7bi4vAWlpcsbImKT_Emco0w4um"
+
+                send_to_discord(webhook_url, item_name, image_url)
+                spins_done += 1
+        else:
+            print("DEBUG: No more spins available")
+            remaining_spins = get_remaining_spins(id_token)
+            print(f"Remaining Spins: {remaining_spins}")
+            if remaining_spins == 0:
+                send_delete_request(id_token)
+                break
+            else:
+                count += remaining_spins - spins_done  # Adjust count for any spins already done
+
+
+def send_delete_request(id_token):
+    url6 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
+    headers6 = {
+        "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+        "Authorization": f"Bearer {id_token}",
+        "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "okhttp/4.12.0"
+    }
+    response6 = requests.delete(url6, headers=headers6)
+    print(response6.status_code)
+    print(response6.text)
+
+add_spins(referral_code)
+send_spin_request(id_token)
+
