@@ -6,23 +6,31 @@ import string
 
 # First API request
 url1 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/auth"
+
 headers1 = {
-    "X-Device-Id": "9dbf2a23e5f177ac",
+    "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+    "X-Device-Id": "eea42864a9a84735",
     "Authorization": "Bearer",
-    "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+    "X-Shopify-Customer-Access-Token": "5732becff54c1b89d905ec338bb421ff",
     "Content-Type": "application/json; charset=utf-8",
     "Accept-Encoding": "gzip, deflate, br",
     "User-Agent": "okhttp/4.12.0"
 }
+
 data1 = {
     "countryCode": "RO",
     "phone": "+40771404568",
     "email": "denisdenis77717@gmail.com"
 }
-response1 = requests.post(url1, headers=headers1, data=json.dumps(data1))
-data_token = response1.json().get("data", "Data field not found")
+
+response1 = requests.post(url1, headers=headers1, json=data1)
+response_data1 = response1.json()
+print(response1.text)
+data_token = response_data1.get('data', 'No data key found')
 print("Data Token: ", data_token)
 # Second API request
+
+
 url2 = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
 headers2 = {
     "Content-Type": "application/json",
@@ -42,53 +50,34 @@ data2 = {
     "returnSecureToken": True
 }
 response2 = requests.post(url2, headers=headers2, data=json.dumps(data2))
-refresh_token = response2.json().get("refreshToken", "refreshToken field not found")
-print("Refresh Token: ", refresh_token)
-# Third API request
-url3 = "https://securetoken.googleapis.com/v1/token?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
-headers3 = {
-    "Content-Type": "application/json",
-    "X-Android-Package": "com.bitraptors.mobilfox",
-    "X-Android-Cert": "5D015420F96CDB1D592C6AB2B68CD97222769CC1",
-    "Accept-Language": "en-US",
-    "X-Client-Version": "Android/Fallback/X22003001/FirebaseCore-Android",
-    "X-Firebase-Gmpid": "1:1065362310606:android:bde93f488b69a773d7979f",
-    "X-Firebase-Client": "H4sIAAAAAAAAAKtWykhNLCpJSk0sKVayio7VUSpLLSrOzM9TslIyUqoFAFyivEQfAAAA",
-    "X-Firebase-Appcheck": "eyJlcnJvciI6IlVOS05PV05fRVJST1IifQ==",
-    "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; SM-S908E Build/TP1A.220624.014)",
-    "Connection": "Keep-Alive",
-    "Accept-Encoding": "gzip, deflate, br"
-}
-data3 = {
-    "grantType": "refresh_token",
-    "refreshToken": refresh_token
-}
-response3 = requests.post(url3, headers=headers3, data=json.dumps(data3))
-response_json3 = response3.json()
-id_token = response_json3.get("id_token", "id_token field not found")
-user_id = response_json3.get("user_id", "user_id field not found")
-print("ID Token: ", id_token)
-print("User ID: ", user_id)
-# Fourth API request
+idToken = response2.json().get("idToken", "idToken field not found")
+print("idToken: ", idToken)
+
+
 url4 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
+
 headers4 = {
-    "Authorization": f"Bearer {id_token}",
-    "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+    "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+    "Authorization": f"Bearer {idToken}",
+    "X-Shopify-Customer-Access-Token": "5732becff54c1b89d905ec338bb421ff",
     "Content-Type": "application/json; charset=utf-8",
     "Accept-Encoding": "gzip, deflate, br",
     "User-Agent": "okhttp/4.12.0"
+
 }
 data4 = {
-    "email": "ilianmarius@gmail.com",
-    "phone": "+40771404569",
+    "email": "denisdenis77717@gmail.com",
+    "phone": "+40771404568",
     "countryCode": "RO",
-    "dateOfBirth": "2024-06-12",
+    "dateOfBirth": "2001-06-12",
     "gender": "gender_man",
-    "phoneType": "Apple Iphone 14"
+    "phoneType": "Apple Iphone 15"
 }
+
 response4 = requests.post(url4, headers=headers4, data=json.dumps(data4))
-response_data4 = response4.json().get("data", "Data field not found")
-referral_code = response_data4.get("referralCode", "referralCode field not found")
+response_data4 = response4.json()
+referral_code = response_data4.get('data', {}).get('referralCode', 'No referralCode found')
+print(response4.text)
 print("Referral Code: ", referral_code)
 
 def add_spins(referral_code):
@@ -274,7 +263,7 @@ def get_remaining_spins(id_token):
     url7 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
     headers7 = {
         "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
-        "Authorization": f"Bearer {id_token}",
+        "Authorization": f"Bearer {idToken}",
         "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
         "Accept-Encoding": "gzip, deflate, br",
         "User-Agent": "okhttp/4.12.0"
@@ -295,7 +284,7 @@ def send_spin_request(id_token, count=17):
         url_remaining_spins = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
         headers_remaining_spins = {
             "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
-            "Authorization": f"Bearer {id_token}",
+            "Authorization": f"Bearer {idToken}",
             "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
             "Accept-Encoding": "gzip, deflate, br",
             "User-Agent": "okhttp/4.12.0"
@@ -309,7 +298,7 @@ def send_spin_request(id_token, count=17):
     url5 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/spin"
     headers5 = {
         "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
-        "Authorization": f"Bearer {id_token}",
+        "Authorization": f"Bearer {idToken}",
         "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
         "Content-Length": "0",
         "Accept-Encoding": "gzip, deflate, br",
@@ -327,7 +316,7 @@ def send_spin_request(id_token, count=17):
             remaining_spins = get_remaining_spins(id_token)
             print(f"Remaining Spins: {remaining_spins}")
             if remaining_spins == 0:
-                send_delete_request(id_token)
+                send_delete_request(idToken)
                 break
             continue
 
@@ -359,17 +348,17 @@ def send_spin_request(id_token, count=17):
             remaining_spins = get_remaining_spins(id_token)
             print(f"Remaining Spins: {remaining_spins}")
             if remaining_spins == 0:
-                send_delete_request(id_token)
+                send_delete_request(idToken)
                 break
             else:
                 count += remaining_spins - spins_done  # Adjust count for any spins already done
 
 
-def send_delete_request(id_token):
+def send_delete_request(idToken):
     url6 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
     headers6 = {
         "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
-        "Authorization": f"Bearer {id_token}",
+        "Authorization": f"Bearer {idToken}",
         "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
         "Accept-Encoding": "gzip, deflate, br",
         "User-Agent": "okhttp/4.12.0"
@@ -379,5 +368,5 @@ def send_delete_request(id_token):
     print(response6.text)
 
 add_spins(referral_code)
-send_spin_request(id_token)
+send_spin_request(idToken)
 
