@@ -16,8 +16,8 @@ headers1 = {
 }
 data1 = {
     "countryCode": "RO",
-    "phone": "+40771404569",
-    "email": "ilianmarius@gmail.com"
+    "phone": "+40771404568",
+    "email": "denisdenis77717@gmail.com"
 }
 response1 = requests.post(url1, headers=headers1, data=json.dumps(data1))
 data_token = response1.json().get("data", "Data field not found")
