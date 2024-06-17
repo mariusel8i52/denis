@@ -71,7 +71,7 @@ data4 = {
     "countryCode": "RO",
     "dateOfBirth": "2001-06-12",
     "gender": "gender_man",
-    "phoneType": "Apple Iphone 15"
+    "phoneType": "Apple Iphone 13"
 }
 
 response4 = requests.post(url4, headers=headers4, data=json.dumps(data4))
@@ -96,10 +96,14 @@ def add_spins(referral_code):
 
     def random_email():
         first_names = [
-            'Andrei', 'Ana', 'Ion', 'Maria', 'Vasile', 'Elena', 'Gheorghe', 'Camelia', 'Nicolae', 'Gabriela'
+            'Andrei', 'Ana', 'Ion', 'Maria', 'Vasile', 'Elena', 'Gheorghe', 'Camelia', 'Nicolae', 'Gabriela',
+'Cristian', 'Ioana', 'Adrian', 'Mihai', 'Camelia', 'Mihaela', 'Oana', 'Alexandru', 'Alina', 'Marius',
+'Dorina', 'Sergiu', 'Monica', 'Daniel', 'Larisa', 'Florentin', 'Madalina', 'Florin', 'Constantin', 'Petre'
         ]
         last_names = [
-            'Popescu', 'Ionescu', 'Mihai', 'Dumitrescu', 'Popa', 'Marin', 'Stan', 'Stefan'
+            'Popescu', 'Ionescu', 'Mihai', 'Dumitrescu', 'Popa', 'Marin', 'Stan', 'Stefan',
+'Radu', 'Dumitru', 'Nica', 'Pascal', 'Neagu', 'Lupu', 'Iliescu', 'Barbu',
+'Coman', 'Diaconu', 'Nistor', 'Preda', 'Voicu', 'Manolache', 'Moldovan', 'Georgescu'
         ]
         first_name = random.choice(first_names).lower()
         last_name = random.choice(last_names).lower()
