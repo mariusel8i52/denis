@@ -80,6 +80,10 @@ referral_code = response_data4.get('data', {}).get('referralCode', 'No referralC
 print(response4.text)
 print("Referral Code: ", referral_code)
 
+if "error" in response_data4 and response_data4["error"] == "User already exists":
+    print("Error: User already exists.")
+    exit()
+
 def add_spins(referral_code):
     custom_user_agent = "Mozilla/5.0 (Linux; Android 12; Pixel; CustomAgent) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Mobile Safari/537.36"
 
@@ -97,20 +101,86 @@ def add_spins(referral_code):
     def random_email():
         first_names = [
             'Andrei', 'Ana', 'Ion', 'Maria', 'Vasile', 'Elena', 'Gheorghe', 'Camelia', 'Nicolae', 'Gabriela',
-'Cristian', 'Ioana', 'Adrian', 'Mihai', 'Camelia', 'Mihaela', 'Oana', 'Alexandru', 'Alina', 'Marius',
-'Dorina', 'Sergiu', 'Monica', 'Daniel', 'Larisa', 'Florentin', 'Madalina', 'Florin', 'Constantin', 'Petre'
+            'Cristian', 'Ioana', 'Adrian', 'Mihai', 'Camelia', 'Mihaela', 'Oana', 'Alexandru', 'Alina', 'Marius',
+            'Dorina', 'Sergiu', 'Monica', 'Daniel', 'Larisa', 'Florentin', 'Madalina', 'Florin', 'Constantin', 'Petre'
         ]
         last_names = [
             'Popescu', 'Ionescu', 'Mihai', 'Dumitrescu', 'Popa', 'Marin', 'Stan', 'Stefan',
-'Radu', 'Dumitru', 'Nica', 'Pascal', 'Neagu', 'Lupu', 'Iliescu', 'Barbu',
-'Coman', 'Diaconu', 'Nistor', 'Preda', 'Voicu', 'Manolache', 'Moldovan', 'Georgescu'
+            'Radu', 'Dumitru', 'Nica', 'Pascal', 'Neagu', 'Lupu', 'Iliescu', 'Barbu',
+            'Coman', 'Diaconu', 'Nistor', 'Preda', 'Voicu', 'Manolache', 'Moldovan', 'Georgescu'
         ]
         first_name = random.choice(first_names).lower()
         last_name = random.choice(last_names).lower()
-        return f'{first_name}.{last_name}{random.randint(1, 99)}@gmail.com'
+        return f'{first_name}.{last_name}{random.randint(1, 999)}@gmail.com'
 
     def random_access_token():
         return ''.join(random.choice(string.hexdigits) for _ in range(32))
+
+    def get_shopify_customer_access_token(email, first_name, last_name, phone):
+        url = "https://mobilfox-ro.myshopify.com/api/2024-01/graphql"
+        headers = {
+            "Host": "mobilfox-ro.myshopify.com",
+            "Accept": "application/json",
+            "X-Buy3-Sdk-Cache-Key": "",
+            "X-Buy3-Sdk-Cache-Fetch-Strategy": "NETWORK_ONLY",
+            "X-Buy3-Sdk-Expire-Timeout": "9223372036854775807",
+            "User-Agent": "Mobile Buy SDK Android/16.3.0/com.bitraptors.mobilfox",
+            "X-Sdk-Version": "16.3.0",
+            "X-Sdk-Variant": "android",
+            "X-Shopify-Storefront-Access-Token": "f23e91a899d7906fb2c9f547c425c1af",
+            "Content-Type": "application/graphql; charset=utf-8",
+            "Accept-Encoding": "gzip, deflate, br"
+        }
+
+        mutation_create_customer = f"""
+        mutation {{
+            customerCreate(input:{{
+                email:"{email}",
+                password:"Sisilaputere_7",
+                firstName:"{first_name}",
+                lastName:"{last_name}",
+                phone:"{phone}",
+                acceptsMarketing:false
+            }}){{
+                customerUserErrors{{
+                    field,
+                    message,
+                    code
+                }}
+            }}
+        }}
+        """
+
+        response = requests.post(url, headers=headers, data=mutation_create_customer)
+        print(response.status_code)
+        print(response.text)
+
+        mutation_access_token = f"""
+        mutation {{
+            customerAccessTokenCreate(input:{{
+                email:"{email}",
+                password:"Sisilaputere_7"
+            }}){{
+                customerAccessToken{{
+                    accessToken,
+                    expiresAt
+                }},
+                customerUserErrors{{
+                    field,
+                    message,
+                    code
+                }}
+            }}
+        }}
+        """
+
+        response = requests.post(url, headers=headers, data=mutation_access_token)
+        print(response.status_code)
+        print(response.text)
+        response_json = response.json()
+        access_token = response_json.get('data', {}).get('customerAccessTokenCreate', {}).get('customerAccessToken', {}).get('accessToken', 'Access token not found')
+
+        return access_token
 
     def get_refresh_token(data_token):
         url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
@@ -159,12 +229,11 @@ def add_spins(referral_code):
         return id_token
 
     def submit_user_data(id_token, phone_number, dob, phone_type):
-        referralCode = "53R4O4220T"
         url = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
         headers = {
             "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
             "Authorization": f"Bearer {id_token}",
-            "X-Shopify-Customer-Access-Token": "4932cb3734eabbe37427666cc648402c",
+            "X-Shopify-Customer-Access-Token": x_shopify_customer_access_token,
             "Content-Type": "application/json; charset=utf-8",
             "Accept-Encoding": "gzip, deflate, br",
             "User-Agent": custom_user_agent
@@ -173,7 +242,7 @@ def add_spins(referral_code):
             "email": random_email(),
             "phone": phone_number,
             "countryCode": "RO",
-    "dateOfBirth": dob,
+            "dateOfBirth": dob,
             "gender": "gender_other",
             "phoneType": phone_type,
             "referralCode": referral_code
@@ -202,19 +271,27 @@ def add_spins(referral_code):
         x_device_id = generate_device_id()
         random_phone_number = random_phone()
         random_email_address = random_email()
-        random_x_shopify_token = random_access_token()
+
+        first_name = random_email_address.split('.')[0]
+        last_name = random_email_address.split('.')[1].split('@')[0]
 
         print(f"X-Device-Id: {x_device_id}")
         print(f"Random Phone: {random_phone_number}")
         print(f"Random Email: {random_email_address}")
-        print(f"X-Shopify-Customer-AccessToken: {random_x_shopify_token}")
+        print(f"First Name: {first_name}")
+        print(f"Last Name: {last_name}")
+
+        x_shopify_customer_access_token = get_shopify_customer_access_token(
+            random_email_address, first_name, last_name, random_phone_number
+        )
+        print(f"X-Shopify-Customer-AccessToken: {x_shopify_customer_access_token}")
 
         url = 'https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/auth'
         headers = {
             'Host': 'europe-west1-mobilfox-prod.cloudfunctions.net',
             'X-Device-Id': x_device_id,
             'Authorization': 'Bearer',
-            'X-Shopify-Customer-Access-Token': '4932cb3734eabbe37427666cc648402c',
+            'X-Shopify-Customer-Access-Token': x_shopify_customer_access_token,
             'Content-Type': 'application/json; charset=utf-8',
             'Accept-Encoding': 'gzip, deflate, br',
             'User-Agent': custom_user_agent
@@ -283,7 +360,7 @@ def get_remaining_spins(idToken):
 
     return daily_spins + extra_spins
 
-def send_spin_request(id_token, count=17):
+def send_spin_request(idToken, count=17):
     def get_remaining_spins(idToken):
         url_remaining_spins = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
         headers_remaining_spins = {
