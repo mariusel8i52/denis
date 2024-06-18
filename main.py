@@ -317,7 +317,7 @@ def send_spin_request(id_token, count=17):
 
         if response5.status_code != 200:
             print("DEBUG: Spin request failed")
-            remaining_spins = get_remaining_spins(id_token)
+            remaining_spins = get_remaining_spins(idToken)
             print(f"Remaining Spins: {remaining_spins}")
             if remaining_spins == 0:
                 send_delete_request(idToken)
@@ -349,7 +349,7 @@ def send_spin_request(id_token, count=17):
                 spins_done += 1
         else:
             print("DEBUG: No more spins available")
-            remaining_spins = get_remaining_spins(id_token)
+            remaining_spins = get_remaining_spins(idToken)
             print(f"Remaining Spins: {remaining_spins}")
             if remaining_spins == 0:
                 send_delete_request(idToken)
