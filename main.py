@@ -263,7 +263,7 @@ def send_to_discord(webhook_url, item_name, image_url):
     response = requests.post(webhook_url, json=payload)
     print(f"Webhook response: {response.status_code}")
 
-def get_remaining_spins(id_token):
+def get_remaining_spins(idToken):
     url7 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
     headers7 = {
         "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
@@ -284,7 +284,7 @@ def get_remaining_spins(id_token):
     return daily_spins + extra_spins
 
 def send_spin_request(id_token, count=17):
-    def get_remaining_spins(id_token):
+    def get_remaining_spins(idToken):
         url_remaining_spins = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
         headers_remaining_spins = {
             "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
@@ -373,4 +373,3 @@ def send_delete_request(idToken):
 
 add_spins(referral_code)
 send_spin_request(idToken)
-
