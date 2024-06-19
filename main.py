@@ -30,6 +30,19 @@ data_token = response_data1.get('data', 'No data key found')
 print("Data Token: ", data_token)
 # Second API request
 
+def send_delete_request(idToken):
+    url6 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
+    headers6 = {
+        "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
+        "Authorization": f"Bearer {idToken}",
+        "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "okhttp/4.12.0"
+    }
+    response6 = requests.delete(url6, headers=headers6)
+    print(response6.status_code)
+    print(response6.text)
+
 def random_string(length):
     return ''.join(random.choices(string.ascii_letters, k=length))
 
@@ -106,6 +119,7 @@ print("Referral Code: ", referral_code)
 
 if "error" in response_data4 and response_data4["error"] == "User already exists":
     print("Error: User already exists.")
+    send_delete_request(idToken)
     exit()
 
 def add_spins(referral_code):
@@ -458,8 +472,8 @@ def send_spin_request(idToken, count=17):
             common_titles = [
                 "gift_nano_glass_title",
                 "gift_lazy_strap_title",
-                "gift_grinder_title",
                 "no_gift_title",
+                "gift_grinder_title",
                 "gift_badge_title",
                 "gift_cross_body_title",
                 "gift_5_off_coupon_title",
@@ -485,19 +499,6 @@ def send_spin_request(idToken, count=17):
                 count += remaining_spins - spins_done  # Adjust count for any spins already done
 
 
-
-def send_delete_request(idToken):
-    url6 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
-    headers6 = {
-        "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
-        "Authorization": f"Bearer {idToken}",
-        "X-Shopify-Customer-Access-Token": "af11e8ddb388bda619495149db1ab6ba",
-        "Accept-Encoding": "gzip, deflate, br",
-        "User-Agent": "okhttp/4.12.0"
-    }
-    response6 = requests.delete(url6, headers=headers6)
-    print(response6.status_code)
-    print(response6.text)
 
 add_spins(referral_code)
 send_spin_request(idToken)
