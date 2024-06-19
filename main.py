@@ -458,6 +458,7 @@ def send_spin_request(idToken, count=17):
             common_titles = [
                 "gift_nano_glass_title",
                 "gift_lazy_strap_title",
+                "gift_grinder_title",
                 "no_gift_title",
                 "gift_badge_title",
                 "gift_cross_body_title",
