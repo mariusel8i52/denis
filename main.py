@@ -30,6 +30,30 @@ data_token = response_data1.get('data', 'No data key found')
 print("Data Token: ", data_token)
 # Second API request
 
+def random_string(length):
+    return ''.join(random.choices(string.ascii_letters, k=length))
+
+def random_digits(length):
+    return ''.join(random.choices(string.digits, k=length))
+
+def generate_random_email(domain=None):
+    if domain is None:
+        domain = "example.com"
+    name = random_string(random.randint(5, 15))
+    address = f"{name}@{domain}"
+    return address
+
+def generate_random_ro_phone():
+    # For a Romanian phone number, the country code is (+40) followed by a 9-digit number.
+    # The following formats are common: 07xx, 03xx, 02xx, 08xx, and 037
+    prefixes = ['07', '03', '02', '08', '037']
+    prefix = random.choice(prefixes)
+    local_number = random_digits(7) if prefix != '037' else random_digits(6)
+    phone_number = f"+40{prefix}{local_number}"
+    return phone_number
+
+random_email = generate_random_email()
+random_phone = generate_random_ro_phone()
 
 url2 = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
 headers2 = {
@@ -66,8 +90,8 @@ headers4 = {
 
 }
 data4 = {
-    "email": "denisdenis77717@gmail.com",
-    "phone": "+40771404568",
+    "email": generate_random_email(),
+    "phone": generate_random_ro_phone(),
     "countryCode": "RO",
     "dateOfBirth": "2001-06-12",
     "gender": "gender_man",
@@ -318,27 +342,28 @@ def add_spins(referral_code):
 
         submit_user_data(id_token, random_phone_number, random_dob, random_phone_type)
 
-def send_to_discord(webhook_url, item_name, image_url):
+def send_to_discord(name, code, imageUrl, webhook_url):
     payload = {
         "content": None,
         "embeds": [
             {
-                "title": f"You won {item_name}",
-                "color": None,
-                "author": {
-                    "name": "Item won",
-                    "icon_url": "https://scontent.fotp3-4.fna.fbcdn.net/v/t39.30808-6/331418536_735260971331856_2894802316724112429_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=5f2048&_nc_ohc=lxABAq8esYoQ7kNvgHa7e_E&_nc_ht=scontent.fotp3-4.fna&oh=00_AYCnV1ghgKLQjzEEJhS1HdZzWeW-A0eqwTrw6v9b8Ls8tQ&oe=667251E4"
-                },
+                "title": name,
+                "description": f"Code: {code}",
                 "image": {
-                    "url": image_url
+                    "url": imageUrl
                 }
             }
         ],
-        "attachments": []
+        "username": "Spin Bot"
     }
-
-    response = requests.post(webhook_url, json=payload)
-    print(f"Webhook response: {response.status_code}")
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(webhook_url, data=json.dumps(payload), headers=headers)
+    if response.status_code == 204:
+        print(f"Successfully sent {name} with code {code} to Discord webhook.")
+    else:
+        print(f"Failed to send to Discord webhook. Status code: {response.status_code}, Response: {response.text}")
 
 def get_remaining_spins(idToken):
     url7 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user/remaining-spins"
@@ -376,6 +401,29 @@ def send_spin_request(idToken, count=17):
         extra_spins = remaining_spins_data["data"]["extraSpins"]
         return daily_spins + extra_spins
 
+    def send_to_discord(webhook_url, item_name, code, image_url):
+        payload = {
+            "content": None,
+            "embeds": [
+                {
+                    "title": item_name,
+                    "description": f"Code: {code}",
+                    "image": {
+                        "url": image_url
+                    }
+                }
+            ],
+            "username": "Spin Bot"
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = requests.post(webhook_url, data=json.dumps(payload), headers=headers)
+        if response.status_code == 204:
+            print(f"Successfully sent {item_name} with code {code} to Discord webhook.")
+        else:
+            print(f"Failed to send to Discord webhook. Status code: {response.status_code}, Response: {response.text}")
+
     url5 = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/spin"
     headers5 = {
         "Host": "europe-west1-mobilfox-prod.cloudfunctions.net",
@@ -403,8 +451,9 @@ def send_spin_request(idToken, count=17):
 
         response_json = response5.json()
         if "data" in response_json and "reward" in response_json["data"]:
-            item_name = response_json["data"]["reward"]["name"]
-            image_url = response_json["data"]["reward"]["imageUrl"]
+            item_name = response_json["data"]["reward"].get("name", "No reward name found")
+            code = response_json["data"].get("code", "No code found")
+            image_url = response_json["data"]["reward"].get("imageUrl", "No image URL found")
 
             common_titles = [
                 "gift_nano_glass_title",
@@ -422,7 +471,7 @@ def send_spin_request(idToken, count=17):
                 else:
                     webhook_url = "https://discord.com/api/webhooks/1251241479230460015/C6BIaJgZ38E46xc4oASZ6vKqWtIsXzejbv4zcbHYCu7bi4vAWlpcsbImKT_Emco0w4um"
 
-                send_to_discord(webhook_url, item_name, image_url)
+                send_to_discord(webhook_url, item_name, code, image_url)
                 spins_done += 1
         else:
             print("DEBUG: No more spins available")
@@ -433,6 +482,7 @@ def send_spin_request(idToken, count=17):
                 break
             else:
                 count += remaining_spins - spins_done  # Adjust count for any spins already done
+
 
 
 def send_delete_request(idToken):
