@@ -68,7 +68,7 @@ def generate_random_ro_phone():
 random_email = generate_random_email()
 random_phone = generate_random_ro_phone()
 
-url2 = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+url2 = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCSZKPKMkdVnFkIM8ntwwpDYbx4rrEkH3g"
 headers2 = {
     "Content-Type": "application/json",
     "X-Android-Package": "com.bitraptors.mobilfox",
@@ -218,10 +218,12 @@ def add_spins(referral_code):
         response_json = response.json()
         access_token = response_json.get('data', {}).get('customerAccessTokenCreate', {}).get('customerAccessToken', {}).get('accessToken', 'Access token not found')
 
+
+        
         return access_token
 
-    def get_refresh_token(data_token):
-        url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
+    def get_id_token(data_token):
+        url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=AIzaSyCSZKPKMkdVnFkIM8ntwwpDYbx4rrEkH3g"
         headers = {
             'Host': 'www.googleapis.com',
             'Content-Type': 'application/json',
@@ -240,31 +242,9 @@ def add_spins(referral_code):
         print(response.status_code)
         print(response.text)
         response_json = response.json()
-        refresh_token = response_json.get("refreshToken", "Refresh token not found")
-        return refresh_token
-
-    def get_id_token(refresh_token):
-        url = "https://securetoken.googleapis.com/v1/token?key=AIzaSyCLoqorlZNWaOQ_fZElSmDdiCzG5zGktNY"
-        headers = {
-            "Host": "securetoken.googleapis.com",
-            "Content-Type": "application/json",
-            "X-Android-Package": "com.bitraptors.mobilfox",
-            "X-Android-Cert": "5D015420F96CDB1D592C6AB2B68CD97222769CC1",
-            "Accept-Language": "en-US",
-            "X-Client-Version": "Android/Fallback/X22003001/FirebaseCore-Android",
-            "User-Agent": custom_user_agent,
-            "Accept-Encoding": "gzip, deflate, br"
-        }
-        data = {
-            "grantType": "refresh_token",
-            "refreshToken": refresh_token
-        }
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        print(response.status_code)
-        print(response.text)
-        response_json = response.json()
-        id_token = response_json.get("id_token", "ID token not found")
+        id_token = response_json.get("idToken", "Refresh token not found")
         return id_token
+
 
     def submit_user_data(id_token, phone_number, dob, phone_type):
         url = "https://europe-west1-mobilfox-prod.cloudfunctions.net/api/v1/user"
@@ -348,10 +328,8 @@ def add_spins(referral_code):
         response_json = response.json()
         data_value = response_json.get('data', 'Data not found')
 
-        refresh_token = get_refresh_token(data_value)
-        print(f"Refresh token: {refresh_token}")
 
-        id_token = get_id_token(refresh_token)
+        id_token = get_id_token(data_value)
         print(f"ID token: {id_token}")
 
         submit_user_data(id_token, random_phone_number, random_dob, random_phone_type)
